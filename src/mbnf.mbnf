@@ -1,0 +1,30 @@
+// This is my minimum simple BNF (mbnf) parser
+// whitespaces between terms are not allowed
+// <term><term>, not <term> <term>
+// one by one, seperated by an empty line (<LF><LF>)
+// extra empty lines are not allowed
+// comments started by "//" is preprocessed
+//
+// example:
+// <A>::=<A><B>|<C><D>
+//
+// <C>::=<E><A>
+//
+// Below is the LL(1) syntax of mBNF itself
+// NOTE: this mbnf itself does not compile because " is not allow in K
+//
+// TODO
+// <F>::=<B><Fr>
+// <Fr>::=EOF|\n\n<F>
+//
+//
+<bnf>::=<term>"::="<stmt>
+<term>::="<"<name>">"
+<stmt>::=<expr><remain_stmt>
+<remain_stmt>::=E|"|"<stmt>
+<expr>::="E"|<expr0><remain_expr>
+<expr0>::="<"<name>">"|"\""<name>"\""
+<remain_expr>::=E|<expr>
+<name>::="a-zA-Z0-9[space]"<name>|E
+//
+// NOTE: "a-zA-Z0-9[space]" is for simplicity, it should be "abcdefg.."
