@@ -30,7 +30,7 @@ pub enum Expr {
 
 //<expr0>::="<"<name>">"|"\""<name>"\""
 pub enum Expr0 {
-    NonTerminal { name: Box<Ast> },
+    NonTerminal { term: Box<Ast> },
     Terminal { name: Box<Ast> },
 }
 
@@ -105,10 +105,9 @@ impl Ast {
                 ret[1].push((1, "\"\"".to_string()));
                 ret
             }
-            Ast::Expr0(Expr0::NonTerminal { name: n }) => {
+            Ast::Expr0(Expr0::NonTerminal { term: t }) => {
                 let mut ret = vec![vec![(0, "Expr".to_string())]];
-                ret.append(&mut n.mk_str_vec());
-                ret[1].push((1, "<>".to_string()));
+                ret.append(&mut t.mk_str_vec());
                 ret
             }
             Ast::Name(Name::Epsilon) => {
@@ -330,17 +329,15 @@ pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<
             match bnfstr.len() {
                 1.. => {
                     if &bnfstr[..1] == "<" {
-                        // try "<"<name>">"
-                        let left_angle_bracket = match_chars("expr0", bnfstr, "<")?;
-                        let n = parse_bnf(left_angle_bracket.remain, AstNodeType::Name)?;
-                        let right_angle_bracket = match_chars("expr0", n.remain, ">")?;
+                        // try <term>
+                        let t = parse_bnf(bnfstr, AstNodeType::Term)?;
                         Ok(ParseResult {
                             matched: &bnfstr
-                                [..left_angle_bracket.len() + n.len() + right_angle_bracket.len()],
+                                [..t.len()],
                             remain: &bnfstr
-                                [left_angle_bracket.len() + n.len() + right_angle_bracket.len()..],
+                                [t.len()..],
                             r: Ast::Expr0(Expr0::NonTerminal {
-                                name: Box::new(n.r),
+                                term: Box::new(t.r),
                             }),
                         })
                     } else if &bnfstr[..1] == "\"" {

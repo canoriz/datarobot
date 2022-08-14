@@ -23,7 +23,7 @@
 <stmt>::=<expr><remain_stmt>
 <remain_stmt>::=E|"|"<stmt>
 <expr>::="E"|<expr0><remain_expr>
-<expr0>::="<"<name>">"|"\""<name>"\""
+<expr0>::=<term>|"\""<name>"\""
 <remain_expr>::=E|<expr>
 <name>::="a-zA-Z0-9[space]"<name>|E
 //
