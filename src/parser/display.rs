@@ -95,7 +95,7 @@ impl Ast {
         }
     }
 
-    pub fn show(&self) {
+    pub fn display(&self) {
         for (level, line) in self.mk_str_vec().iter().enumerate() {
             print!("#{}  ", level + 1);
             for (nu, word) in line {

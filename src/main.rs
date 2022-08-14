@@ -12,7 +12,7 @@ fn main() {
         lines.iter().for_each(|l| match parser::parse(l) {
             Ok(ast) => {
                 println!("OK!");
-                ast.show();
+                ast.display();
             }
             Err(msg) => println!("{}", msg),
         });

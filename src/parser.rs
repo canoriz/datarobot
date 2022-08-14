@@ -87,13 +87,6 @@ impl<'a> ParseResult<'a> {
 }
 
 pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<'a>, String> {
-    /*
-    bnfstr
-        .chars()
-        .zip(bnfstr.chars().skip(1))
-        .for_each(|(t, lookahead)| println!("{}{}", t, lookahead));
-        */
-
     let match_chars = |caller: &'a str, s: &'a str, p: &'a str| {
         if s.len() >= p.len() && &s[..p.len()] == p {
             Ok(ParseResult {
@@ -212,17 +205,15 @@ pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<
             }
         }
         AstNodeType::Expr0 => {
-            // <expr0>::="<"<name>">"|"\""<name>"\""
+            // <expr0>::=<term>|"\""<name>"\""
             match bnfstr.len() {
                 1.. => {
                     if &bnfstr[..1] == "<" {
                         // try <term>
                         let t = parse_bnf(bnfstr, AstNodeType::Term)?;
                         Ok(ParseResult {
-                            matched: &bnfstr
-                                [..t.len()],
-                            remain: &bnfstr
-                                [t.len()..],
+                            matched: &bnfstr[..t.len()],
+                            remain: &bnfstr[t.len()..],
                             r: Ast::Expr0(Expr0::NonTerminal {
                                 term: Box::new(t.r),
                             }),
