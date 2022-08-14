@@ -10,7 +10,10 @@ fn main() {
     // File hosts must exist in current path before this produces output
     if let Ok(lines) = read_bnfs_from_file("./bnfs") {
         lines.iter().for_each(|l| match parser::parse(l) {
-            Ok(_) => println!("OK!"),
+            Ok(ast) => {
+                println!("OK!");
+                ast.show();
+            }
             Err(msg) => println!("{}", msg),
         });
     }
