@@ -2,6 +2,7 @@
 this file is a hand crafted minimum BNF parser
 */
 mod display;
+mod gen;
 
 pub enum AstNodeType {
     Bnf,
