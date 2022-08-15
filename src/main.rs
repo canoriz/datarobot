@@ -3,20 +3,24 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
+mod collection;
 mod parser;
 mod preprocessor;
 
 fn main() {
     // File hosts must exist in current path before this produces output
     if let Ok(lines) = read_bnfs_from_file("./bnfs") {
-        lines.iter().for_each(|l| match parser::parse(l) {
-            Ok(ast) => {
-                println!("OK!");
-                //ast.display();
-                println!("{}", ast.bnf());
-                println!("{}", ast.gen());
+        lines.iter().for_each(|l| {
+            let a = collection::Collection::new();
+            match parser::parse(l) {
+                Ok(ast) => {
+                    println!("OK!");
+                    //ast.display();
+                    println!("{}", ast.bnf());
+                    println!("{}", ast.gen());
+                }
+                Err(msg) => println!("{}", msg),
             }
-            Err(msg) => println!("{}", msg),
         });
     }
 }

@@ -4,8 +4,8 @@ use rand::Rng;
 impl Ast {
     pub fn bnf(&self) -> String {
         match self {
-            Ast::Bnf { stmt: s, term: t } => {
-                format!("[BNF] {} ::= {}", t.bnf(), s.bnf())
+            Ast::Bnf (b) => {
+                format!("[BNF] {} ::= {}", b.term.bnf(), b.stmt.bnf())
             }
             Ast::Expr(Expr::LetterE) => "".to_string(),
             Ast::Expr(Expr::Expr0Remain {
@@ -41,8 +41,8 @@ impl Ast {
 
     pub fn gen(&self) -> String {
         match self {
-            Ast::Bnf { stmt: s, term: t } => {
-                format!("[GEN] {} ::= {}", t.bnf(), s.gen())
+            Ast::Bnf (b) => {
+                format!("[GEN] {} ::= {}", b.term.bnf(), b.stmt.gen())
             }
             Ast::Expr(Expr::LetterE) => "".to_string(),
             Ast::Expr(Expr::Expr0Remain {
@@ -67,7 +67,7 @@ impl Ast {
                 expr: e,
                 remain_stmt: r,
             } => {
-                if let Ast::RemainStmt(RemainStmt::OrStmt { stmt: s }) = &**r {
+                if let Ast::RemainStmt(RemainStmt::OrStmt { .. }) = &**r {
                     let mut rng = rand::thread_rng();
 
                     let rnd: f32 = rng.gen();

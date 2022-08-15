@@ -2,7 +2,7 @@
 this file is a hand crafted minimum BNF parser
 */
 mod display;
-mod gen;
+pub mod gen;
 
 pub enum AstNodeType {
     Bnf,
@@ -13,6 +13,11 @@ pub enum AstNodeType {
     Expr0,
     RemainExpr,
     Name,
+}
+
+pub struct Bnf {
+        pub term: Box<Ast>,
+        stmt: Box<Ast>,
 }
 
 //<remain_stmt>::=E|"|"<stmt>
@@ -52,10 +57,7 @@ pub enum Name {
 }
 
 pub enum Ast {
-    Bnf {
-        term: Box<Ast>,
-        stmt: Box<Ast>,
-    },
+    Bnf(Bnf),
     Term {
         name: Box<Ast>,
     },
@@ -109,10 +111,10 @@ pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<
             Ok(ParseResult {
                 matched: &bnfstr[..t.len() + comma2_eq.len() + s.len()],
                 remain: &bnfstr[t.len() + comma2_eq.len() + s.len()..],
-                r: Ast::Bnf {
+                r: Ast::Bnf(Bnf{
                     term: Box::new(t.r),
                     stmt: Box::new(s.r),
-                },
+                }),
             })
         }
         AstNodeType::Term => {
