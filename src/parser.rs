@@ -16,8 +16,8 @@ pub enum AstNodeType {
 }
 
 pub struct Bnf {
-        pub term: Box<Ast>,
-        stmt: Box<Ast>,
+    pub term: Box<Ast>,
+    pub stmt: Box<Ast>,
 }
 
 //<remain_stmt>::=E|"|"<stmt>
@@ -111,7 +111,7 @@ pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<
             Ok(ParseResult {
                 matched: &bnfstr[..t.len() + comma2_eq.len() + s.len()],
                 remain: &bnfstr[t.len() + comma2_eq.len() + s.len()..],
-                r: Ast::Bnf(Bnf{
+                r: Ast::Bnf(Bnf {
                     term: Box::new(t.r),
                     stmt: Box::new(s.r),
                 }),

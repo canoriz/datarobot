@@ -10,18 +10,18 @@ mod preprocessor;
 fn main() {
     // File hosts must exist in current path before this produces output
     if let Ok(lines) = read_bnfs_from_file("./bnfs") {
+        let mut a = collection::Collection::new();
         lines.iter().for_each(|l| {
-            let a = collection::Collection::new();
-            match parser::parse(l) {
-                Ok(ast) => {
-                    println!("OK!");
-                    //ast.display();
-                    println!("{}", ast.bnf());
-                    println!("{}", ast.gen());
-                }
-                Err(msg) => println!("{}", msg),
+            if let Err(s) = a.add(l) {
+                println!("[skip {}] {}", l, s);
             }
         });
+
+        vec!["<e>"].iter().for_each(|bnf_expr| match a.gen(bnf_expr) {
+            Ok(s) => println!("{}: {}", bnf_expr, s),
+            Err(s) => println!("{}", s),
+        });
+
     }
 }
 

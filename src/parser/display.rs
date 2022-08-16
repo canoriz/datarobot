@@ -14,7 +14,7 @@ impl Ast {
             v
         };
         match self {
-            Ast::Bnf (b) => {
+            Ast::Bnf(b) => {
                 let mut ret = vec![vec![(0, "bnf ::=".to_string())]];
                 ret.append(&mut vec_add(b.term.mk_str_vec(), b.stmt.mk_str_vec()));
                 ret
