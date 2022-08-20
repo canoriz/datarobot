@@ -64,6 +64,7 @@ pub enum Ast {
     Stmt {
         expr: Box<Ast>,
         remain_stmt: Box<Ast>,
+        parallels: i32,
     },
     RemainStmt(RemainStmt),
     Expr(Expr),
@@ -139,6 +140,17 @@ pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<
                 remain: &bnfstr[e.len() + r.len()..],
                 r: Ast::Stmt {
                     expr: Box::new(e.r),
+                    parallels: match r.r {
+                        Ast::RemainStmt(RemainStmt::Epsilon) => 1,
+                        Ast::RemainStmt(RemainStmt::OrStmt { stmt: ref s }) => {
+                            if let Ast::Stmt { parallels: p, .. } = &**s {
+                                p + 1
+                            } else {
+                                0
+                            }
+                        }
+                        _ => 0,
+                    },
                     remain_stmt: Box::new(r.r),
                 },
             })
@@ -199,7 +211,7 @@ pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<
                         })
                     } else {
                         Err(format!(
-                            "[<expr>::=\"E\"|<expr0><remain_expr>] expect E or |, found {}",
+                            "[<expr>::=\"E\"|<expr0><remain_expr>] expect E<\", found {}",
                             bnfstr
                         ))
                     }
@@ -235,7 +247,7 @@ pub fn parse_bnf<'a>(bnfstr: &'a str, state: AstNodeType) -> Result<ParseResult<
                         })
                     } else {
                         Err(format!(
-                            r#"[<expr0>::="<"<name>">"|"""<name>"""] expect <,| found {}"#,
+                            r#"[<expr0>::="<"<name>">"|"""<name>"""] expect <\", found {}"#,
                             bnfstr
                         ))
                     }

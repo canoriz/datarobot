@@ -80,6 +80,7 @@ impl Ast {
             Ast::Stmt {
                 expr: e,
                 remain_stmt: r,
+                ..
             } => {
                 let mut ret = vec![vec![(0, "Stmt".to_string())]];
                 ret.append(&mut vec_add(e.mk_str_vec(), r.mk_str_vec()));

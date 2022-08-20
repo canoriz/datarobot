@@ -26,51 +26,76 @@ impl Collection {
 
     pub fn gen(&self, bnf: &str) -> Result<String, String> {
         fn gen_from_ast(ast: &Ast, bnfs: &HashMap<String, Ast>) -> Result<String, String> {
-            match ast {
-                Ast::Bnf(b) => gen_from_ast(&b.stmt, bnfs),
-                Ast::Expr(Expr::LetterE) => Ok("".to_string()),
-                Ast::Expr(Expr::Expr0Remain {
-                    expr0: e0,
-                    remain_expr: r,
-                }) => Ok(format!(
-                    "{}{}",
-                    gen_from_ast(e0, bnfs)?,
-                    gen_from_ast(r, bnfs)?
-                )),
-                Ast::Expr0(Expr0::Terminal { name: n }) => gen_from_ast(n, bnfs),
-                Ast::Expr0(Expr0::NonTerminal { term: t }) => match bnfs.get(&t.bnf()) {
-                    Some(ast) => gen_from_ast(ast, bnfs),
-                    None => Err(format!("No production rule for {}", t.bnf())),
-                },
-                Ast::Name(Name::Epsilon) => Ok("".to_string()),
-                Ast::Name(Name::HeadTail { head: h, tail: t }) => {
-                    Ok(format!("{}{}", h, gen_from_ast(t, bnfs)?))
-                }
-                Ast::RemainExpr(RemainExpr::Epsilon) => Ok("".to_string()),
-                Ast::RemainExpr(RemainExpr::Expr { expr: e }) => gen_from_ast(e, bnfs),
-                Ast::RemainStmt(RemainStmt::Epsilon) => Ok("".to_string()),
-                Ast::RemainStmt(RemainStmt::OrStmt { stmt: s }) => gen_from_ast(s, bnfs),
-                Ast::Stmt {
-                    expr: e,
-                    remain_stmt: r,
-                } => {
-                    if let Ast::RemainStmt(RemainStmt::OrStmt { .. }) = &**r {
-                        let mut rng = rand::thread_rng();
-
-                        let rnd: f32 = rng.gen();
-                        let p = 0.80;
-                        if rnd < p {
-                            gen_from_ast(r, bnfs)
-                        } else {
-                            gen_from_ast(e, bnfs)
-                        }
-                    } else {
-                        gen_from_ast(e, bnfs)
+            let mut stack = Vec::<&Ast>::new();
+            let mut text = "".to_string();
+            stack.push(ast);
+            while !stack.is_empty() {
+                let top_ast = stack.pop().ok_or_else(|| "Stack error".to_string())?;
+                match top_ast {
+                    Ast::Bnf(b) => {
+                        stack.push(&b.stmt);
                     }
-                }
-                Ast::Term { name: n } => gen_from_ast(n, bnfs),
-                Ast::Epsilon => Ok("".to_string()),
+                    Ast::Expr(Expr::LetterE) => (),
+                    Ast::Expr(Expr::Expr0Remain {
+                        expr0: e0,
+                        remain_expr: r,
+                    }) => {
+                        stack.push(r);
+                        stack.push(e0);
+                    }
+                    Ast::Expr0(Expr0::Terminal { name: n }) => {
+                        stack.push(n);
+                    }
+                    Ast::Expr0(Expr0::NonTerminal { term: t }) => match bnfs.get(&t.bnf()) {
+                        Some(ast) => {
+                            stack.push(ast);
+                        }
+                        None => {
+                            return Err(format!("No production rule for {}", t.bnf()));
+                        }
+                    },
+                    Ast::Name(Name::Epsilon) => (),
+                    Ast::Name(Name::HeadTail { head: h, tail: t }) => {
+                        stack.push(t);
+                        text += h;
+                    }
+                    Ast::RemainExpr(RemainExpr::Epsilon) => (),
+                    Ast::RemainExpr(RemainExpr::Expr { expr: e }) => {
+                        stack.push(e);
+                    }
+                    Ast::RemainStmt(RemainStmt::Epsilon) => (),
+                    Ast::RemainStmt(RemainStmt::OrStmt { stmt: s }) => {
+                        stack.push(s);
+                    }
+                    Ast::Stmt {
+                        expr: e,
+                        remain_stmt: r,
+                        parallels: par,
+                    } => {
+                        if let Ast::RemainStmt(RemainStmt::OrStmt { .. }) = &**r {
+                            let mut rng = rand::thread_rng();
+
+                            let rnd: f32 = rng.gen();
+                            // the more length we have, the less we tend to jump
+                            let p = 1.0 / ((1 + text.len()) as f32 / 50.0 + 1f32);
+                            let uniform = (par - 1) as f32 / *par as f32;
+                            //println!("par {} ast {}", par, r.bnf());
+                            if rnd < p && rnd < uniform {
+                                stack.push(r);
+                            } else {
+                                stack.push(e);
+                            }
+                        } else {
+                            stack.push(e);
+                        }
+                    }
+                    Ast::Term { name: n } => {
+                        stack.push(n);
+                    }
+                    Ast::Epsilon => (),
+                };
             }
+            Ok(text)
         }
 
         let ast = self

@@ -14,7 +14,7 @@ impl Ast {
             }) => {
                 format!("{} {}", e0.bnf(), r.bnf())
             }
-            Ast::Expr0(Expr0::Terminal { name: n }) => n.bnf(),
+            Ast::Expr0(Expr0::Terminal { name: n }) => format!("\"{}\"", n.bnf()),
             Ast::Expr0(Expr0::NonTerminal { term: t }) => t.bnf(),
             Ast::Name(Name::Epsilon) => "".to_string(),
             Ast::Name(Name::HeadTail { head: h, tail: t }) => {
@@ -29,6 +29,7 @@ impl Ast {
             Ast::Stmt {
                 expr: e,
                 remain_stmt: r,
+                ..
             } => {
                 format!("{}{}", e.bnf(), r.bnf())
             }

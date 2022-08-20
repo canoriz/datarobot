@@ -17,11 +17,12 @@ fn main() {
             }
         });
 
-        vec!["<e>"].iter().for_each(|bnf_expr| match a.gen(bnf_expr) {
-            Ok(s) => println!("{}: {}", bnf_expr, s),
-            Err(s) => println!("{}", s),
-        });
-
+        vec!["<output>"]
+            .iter()
+            .for_each(|bnf_expr| match a.gen(bnf_expr) {
+                Ok(s) => println!("{}: {}", bnf_expr, s),
+                Err(s) => println!("{}", s),
+            });
     }
 }
 
